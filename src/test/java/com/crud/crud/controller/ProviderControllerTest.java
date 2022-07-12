@@ -20,7 +20,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebMvcTest(ProviderController.class)
 public class ProviderControllerTest {
@@ -81,8 +83,8 @@ public class ProviderControllerTest {
         String url = "/api/v1/provider";
         mockMvc.perform(
                 post(url)
-                        .param("providerName", "Airtel")
-                        .param("flowName", "Optical")
+                        .param("providerName","Airtel")
+                        .param("flowName","Optical")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(body))
         ).andExpect(status().isOk());
@@ -126,7 +128,12 @@ public class ProviderControllerTest {
         String url = "/api/v1/provider/" + providerName;
         Mockito.when(providerRepository.findByProviderName(providerName)).thenReturn(provider);
         Mockito.doNothing().when(providerRepository).delete(provider);
-        mockMvc.perform(delete(url)).andExpect(status().isOk());
+        MvcResult mvcResult = mockMvc.perform(delete(url)).andExpect(status().isOk()).andReturn();
+        String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+        Map<String, Boolean> expectedResponse = new HashMap<>();
+        expectedResponse.put("deleted", Boolean.TRUE);
+        String expectedJsonResponse = objectMapper.writeValueAsString(expectedResponse);
+        assertThat(actualJsonResponse).isEqualToIgnoringWhitespace(expectedJsonResponse);
     }
 
 }
